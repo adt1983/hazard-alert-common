@@ -162,4 +162,17 @@ public abstract class CommonUtil {
 		}
 		return strings;
 	}
+
+	public static final String lowercaseLinks(String s) {
+		final String prefix = " http://www";
+		s = s.replaceAll("[\\s]HTTP://WWW|[\\s](?i)www", prefix);
+		char[] rawString = s.toCharArray();
+		for (int i = 0; -1 != (i = s.indexOf(prefix, i));) {
+			i++; // skip initial space
+			for (; i < s.length() && !Character.isWhitespace(rawString[i]); i++) {
+				rawString[i] = Character.toLowerCase(rawString[i]);
+			}
+		}
+		return String.copyValueOf(rawString);
+	}
 }
