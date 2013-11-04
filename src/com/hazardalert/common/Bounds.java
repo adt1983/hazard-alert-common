@@ -21,6 +21,7 @@ public class Bounds {
 	}
 
 	public void setNe_lat(double ne_lat) {
+		new Assert(isLat(ne_lat));
 		this.ne_lat = ne_lat;
 	}
 
@@ -29,6 +30,7 @@ public class Bounds {
 	}
 
 	public void setNe_lng(double ne_lng) {
+		new Assert(isLng(ne_lng));
 		this.ne_lng = ne_lng;
 	}
 
@@ -37,6 +39,7 @@ public class Bounds {
 	}
 
 	public void setSw_lat(double sw_lat) {
+		new Assert(isLat(sw_lat));
 		this.sw_lat = sw_lat;
 	}
 
@@ -45,6 +48,7 @@ public class Bounds {
 	}
 
 	public void setSw_lng(double sw_lng) {
+		new Assert(isLng(sw_lng));
 		this.sw_lng = sw_lng;
 	}
 
@@ -59,23 +63,23 @@ public class Bounds {
 	}
 
 	public Bounds(Envelope env) {
-		this(env.getMaxX(), env.getMaxY(), env.getMinX(), env.getMinY());
+		this(env.getMaxY(), env.getMaxX(), env.getMinY(), env.getMinX());
 	}
 
 	public com.vividsolutions.jts.geom.Envelope toEnvelope() {
 		Envelope env = new Envelope();
-		env.expandToInclude(getNe_lat(), getNe_lng());
-		env.expandToInclude(getSw_lat(), getSw_lng());
+		env.expandToInclude(getNe_lng(), getNe_lat());
+		env.expandToInclude(getSw_lng(), getSw_lat());
 		return env;
 	}
 
 	public com.vividsolutions.jts.geom.Polygon toPolygon() {
 		Coordinate mbr[] = new Coordinate[5];
-		mbr[0] = new Coordinate(ne_lat, ne_lng);
-		mbr[1] = new Coordinate(ne_lat, sw_lng);
-		mbr[2] = new Coordinate(sw_lat, sw_lng);
-		mbr[3] = new Coordinate(sw_lat, ne_lng);
-		mbr[4] = new Coordinate(ne_lat, ne_lng);
+		mbr[0] = new Coordinate(ne_lng, ne_lat);
+		mbr[1] = new Coordinate(sw_lng, ne_lat);
+		mbr[2] = new Coordinate(sw_lng, sw_lat);
+		mbr[3] = new Coordinate(ne_lng, sw_lat);
+		mbr[4] = new Coordinate(ne_lng, ne_lat);
 		GeometryFactory factory = new GeometryFactory();
 		LinearRing shell = factory.createLinearRing(mbr);
 		return new com.vividsolutions.jts.geom.Polygon(shell, null, factory);
@@ -88,5 +92,13 @@ public class Bounds {
 
 	public double _getMinX() {
 		return 0.0;
+	}
+
+	private boolean isLat(double lat) {
+		return -90.0 < lat && lat < 90.0;
+	}
+
+	private boolean isLng(double lng) {
+		return -180.0 < lng && lng < 180.0;
 	}
 }
