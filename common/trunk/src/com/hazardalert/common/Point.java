@@ -5,8 +5,11 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class Point {
 	public static final Point BB_NE = new Point(-90.0, -180.0);
+
 	public static final Point BB_SW = new Point(90.0, 180.0);
+
 	private double lat;
+
 	private double lng;
 
 	public Point() {}
@@ -17,11 +20,11 @@ public class Point {
 	}
 
 	public Point(com.vividsolutions.jts.geom.Coordinate jts) {
-		this(jts.x, jts.y);
+		this(jts.y, jts.x);
 	}
 
 	public Point(com.vividsolutions.jts.geom.Point jts) {
-		this(jts.getX(), jts.getY());
+		this(jts.getY(), jts.getX());
 	}
 
 	public Point(com.google.publicalerts.cap.Point p) {
@@ -55,7 +58,7 @@ public class Point {
 	}
 
 	public com.vividsolutions.jts.geom.Coordinate toCoordinate() {
-		return new Coordinate(lat, lng);
+		return new Coordinate(lng, lat);
 	}
 
 	public com.vividsolutions.jts.geom.Point toPointJTS() {
