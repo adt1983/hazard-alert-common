@@ -1,11 +1,18 @@
 package com.hazardalert.common;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.google.publicalerts.cap.Alert;
 import com.google.publicalerts.cap.Info;
+import com.google.publicalerts.cap.Info.Certainty;
+import com.google.publicalerts.cap.Info.Severity;
+import com.google.publicalerts.cap.Info.Urgency;
 
-public class AlertFilter {
+public class AlertFilter implements Serializable {
 	private Bounds include;
 
 	private Bounds exclude;
@@ -14,13 +21,15 @@ public class AlertFilter {
 
 	private Long minEffective;
 
-	private Longs severity;
+	private List<Long> severity;
 
-	private Longs certainty;
+	private List<Long> certainty;
 
-	private Longs urgency;
+	private List<Long> urgency;
 
-	private Longs status;
+	private List<Long> status;
+
+	private List<Long> senders;
 
 	private Long limit;
 
@@ -29,71 +38,155 @@ public class AlertFilter {
 		addStatus(Alert.Status.ACTUAL); // Hide Exercise/System/Test/Draft by default
 	}
 
-	public Longs getCertainty() {
+	public static AlertFilter defaultClientFilter() {
+		AlertFilter af = new AlertFilter();
+		af.addUrgency(Urgency.FUTURE);
+		af.addUrgency(Urgency.EXPECTED);
+		af.addUrgency(Urgency.IMMEDIATE);
+		//
+		af.addSeverity(Severity.MINOR);
+		af.addSeverity(Severity.MODERATE);
+		af.addSeverity(Severity.SEVERE);
+		af.addSeverity(Severity.EXTREME);
+		//
+		af.addCertainty(Certainty.UNLIKELY);
+		af.addCertainty(Certainty.POSSIBLE);
+		af.addCertainty(Certainty.LIKELY);
+		af.addCertainty(Certainty.VERY_LIKELY);
+		af.addCertainty(Certainty.OBSERVED);
+		//
+		af.setMinEffective(new Date().getTime() - (3 * CommonUtil.ONE_DAY_MS)); // effective in the last 3 days
+		return af;
+	}
+
+	public List<Long> getCertainty() {
 		return certainty;
 	}
 
-	public AlertFilter setCertainty(Longs certainty) {
+	public AlertFilter setCertainty(List<Long> certainty) {
 		this.certainty = certainty;
 		return this;
 	}
 
+	public AlertFilter addCertainty(int value) {
+		return addCertainty(Info.Certainty.valueOf(value));
+	}
+
 	public AlertFilter addCertainty(Info.Certainty c) {
 		if (null == certainty) {
-			certainty = new Longs();
+			certainty = new ArrayList<Long>();
 		}
-		certainty.add(c.getNumber());
+		addTo(certainty, c.getNumber());
 		return this;
 	}
 
-	public Longs getUrgency() {
+	private void addTo(List<Long> list, int value) {
+		addTo(list, Long.valueOf(value));
+	}
+
+	private void addTo(List<Long> list, Long value) {
+		if (!list.contains(value)) {
+			list.add(value);
+		}
+	}
+
+	/*
+	 * public boolean contains(Long a) {
+		for (Long b : this) {
+			if (0 == a.compareTo(b)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	 */
+	public List<Long> getSenders() {
+		return senders;
+	}
+
+	public AlertFilter setSenders(List<Long> senders) {
+		this.senders = senders;
+		return this;
+	}
+
+	public AlertFilter addSender(Long sender) {
+		if (null == senders) {
+			senders = new ArrayList<Long>();
+		}
+		addTo(senders, sender);
+		return this;
+	}
+
+	public List<Long> getUrgency() {
 		return urgency;
 	}
 
-	public AlertFilter setUrgency(Longs urgency) {
+	public boolean hasSender(Long id) {
+		if (null == this.senders) {
+			return false;
+		}
+		return this.senders.contains(id);
+	}
+
+	public boolean hasStatus(Alert.Status status) {
+		if (null == this.status) {
+			return false;
+		}
+		return this.status.contains(Long.valueOf(status.ordinal()));
+	}
+
+	public AlertFilter setUrgency(List<Long> urgency) {
 		this.urgency = urgency;
 		return this;
 	}
 
+	public AlertFilter addUrgency(int value) {
+		return addUrgency(Info.Urgency.valueOf(value));
+	}
+
 	public AlertFilter addUrgency(Info.Urgency u) {
 		if (null == urgency) {
-			urgency = new Longs();
+			urgency = new ArrayList<Long>();
 		}
-		urgency.add(u.getNumber());
+		addTo(urgency, u.getNumber());
 		return this;
 	}
 
-	public Longs getStatus() {
+	public List<Long> getStatus() {
 		return status;
 	}
 
-	public AlertFilter setStatus(Longs status) {
+	public AlertFilter setStatus(List<Long> status) {
 		this.status = status;
 		return this;
 	}
 
 	public AlertFilter addStatus(Alert.Status s) {
 		if (null == status) {
-			status = new Longs();
+			status = new ArrayList<Long>();
 		}
-		status.add(s.getNumber());
+		addTo(status, s.getNumber());
 		return this;
 	}
 
-	public Longs getSeverity() {
+	public List<Long> getSeverity() {
 		return severity;
 	}
 
-	public AlertFilter setSeverity(Longs severity) {
+	public AlertFilter setSeverity(List<Long> severity) {
 		this.severity = severity;
 		return this;
 	}
 
+	public AlertFilter addSeverity(int value) {
+		return addSeverity(Info.Severity.valueOf(value));
+	}
+
 	public AlertFilter addSeverity(Info.Severity s) {
 		if (null == severity) {
-			severity = new Longs();
+			severity = new ArrayList<Long>();
 		}
-		severity.add(s.getNumber());
+		addTo(severity, s.getNumber());
 		return this;
 	}
 
@@ -161,5 +254,56 @@ public class AlertFilter {
 			sb.append(limit.toString());
 		}
 		return sb.toString();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		AlertFilter rhs = (AlertFilter) obj;
+		boolean equals = true;
+		equals = fieldEquals(certainty, rhs.certainty) ? equals : false;
+		equals = fieldEquals(exclude, rhs.exclude) ? equals : false;
+		equals = fieldEquals(include, rhs.include) ? equals : false;
+		equals = fieldEquals(limit, rhs.limit) ? equals : false;
+		equals = fieldEquals(minEffective, rhs.minEffective) ? equals : false;
+		equals = fieldEquals(minExpires, rhs.minExpires) ? equals : false;
+		equals = fieldEquals(senders, rhs.senders) ? equals : false;
+		equals = fieldEquals(severity, rhs.severity) ? equals : false;
+		equals = fieldEquals(status, rhs.status) ? equals : false;
+		equals = fieldEquals(urgency, rhs.urgency) ? equals : false;
+		return equals;
+	}
+
+	private <T> boolean fieldEquals(T lhs, T rhs) {
+		if (null == lhs) {
+			return null == rhs;
+		}
+		return null == rhs ? false : lhs.equals(rhs);
+	}
+
+	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+		out.writeObject(certainty);
+		out.writeObject(exclude);
+		out.writeObject(include);
+		out.writeObject(limit);
+		out.writeObject(minEffective);
+		out.writeObject(minExpires);
+		out.writeObject(senders);
+		out.writeObject(severity);
+		out.writeObject(status);
+		out.writeObject(urgency);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		certainty = (List<Long>) in.readObject();
+		exclude = (Bounds) in.readObject();
+		include = (Bounds) in.readObject();
+		limit = (Long) in.readObject();
+		minEffective = (Long) in.readObject();
+		minExpires = (Long) in.readObject();
+		senders = (List<Long>) in.readObject();
+		severity = (List<Long>) in.readObject();
+		status = (List<Long>) in.readObject();
+		urgency = (List<Long>) in.readObject();
 	}
 }
