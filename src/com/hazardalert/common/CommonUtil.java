@@ -14,6 +14,21 @@ import com.vividsolutions.jts.geom.Polygon;
 
 //import com.google.publicalerts.cap.Point;
 public abstract class CommonUtil {
+	/**
+	 * Common time values
+	 */
+	public static final long ONE_SECOND_MS = 1000;
+
+	public static final long ONE_MINUTE_MS = 60 * ONE_SECOND_MS;
+
+	public static final long FIFTEEN_MINUTES_MS = 15 * ONE_MINUTE_MS;
+
+	public static final long ONE_HOUR_MS = 60 * ONE_MINUTE_MS;
+
+	public static final long ONE_DAY_MS = 24 * ONE_HOUR_MS;
+
+	public static final long ONE_WEEK_MS = 7 * ONE_DAY_MS;
+
 	public final static com.vividsolutions.jts.geom.Coordinate cap_to_jts(com.google.publicalerts.cap.Point point) {
 		return new com.hazardalert.common.Point(point.getLatitude(), point.getLongitude()).toCoordinate();
 	}
@@ -174,5 +189,12 @@ public abstract class CommonUtil {
 			}
 		}
 		return String.copyValueOf(rawString);
+	}
+
+	public static <T> List<T> toNonNull(List<T> results) {
+		if (null == results) {
+			results = new LinkedList<T>();
+		}
+		return results;
 	}
 }
