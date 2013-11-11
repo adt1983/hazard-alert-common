@@ -1,11 +1,14 @@
 package com.hazardalert.common;
 
+import java.io.IOException;
+import java.io.Serializable;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 
-public class Bounds {
+public class Bounds implements Serializable {
 	private Double ne_lat;
 
 	private Double ne_lng;
@@ -95,10 +98,47 @@ public class Bounds {
 	}
 
 	private boolean isLat(double lat) {
-		return -90.0 < lat && lat < 90.0;
+		return -90.0 <= lat && lat <= 90.0;
 	}
 
 	private boolean isLng(double lng) {
-		return -180.0 < lng && lng < 180.0;
+		return -180.0 <= lng && lng <= 180.0;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		Bounds rhs = (Bounds) obj;
+		boolean equals = true;
+		equals = ne_lng.equals(rhs.ne_lng) ? equals : false;
+		equals = ne_lat.equals(rhs.ne_lat) ? equals : false;
+		equals = sw_lng.equals(rhs.sw_lng) ? equals : false;
+		equals = sw_lat.equals(rhs.sw_lat) ? equals : false;
+		return equals;
+	}
+
+	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+		out.writeObject(ne_lng);
+		out.writeObject(ne_lat);
+		out.writeObject(sw_lng);
+		out.writeObject(sw_lat);
+	}
+
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		ne_lng = (Double) in.readObject();
+		ne_lat = (Double) in.readObject();
+		sw_lng = (Double) in.readObject();
+		sw_lat = (Double) in.readObject();
+	}
+
+	public boolean spansAntiMeridian() {
+		return sw_lng > ne_lng;
+	}
+
+	public Bounds[] splitOnAntiMeridian() {
+		new Assert(spansAntiMeridian());
+		Bounds split[] = new Bounds[2];
+		split[0] = new Bounds(ne_lat, ne_lng, sw_lat, -180.0); // East of 180 Meridian
+		split[1] = new Bounds(ne_lat, 180.0, sw_lat, sw_lng); // West of 180 Meridian
+		return split;
 	}
 }
