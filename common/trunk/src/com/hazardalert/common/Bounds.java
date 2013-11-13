@@ -8,6 +8,8 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 
+// TODO convert storage to Point
+@SuppressWarnings("serial")
 public class Bounds implements Serializable {
 	private Double ne_lat;
 

@@ -29,27 +29,16 @@ public abstract class CommonUtil {
 
 	public static final long ONE_WEEK_MS = 7 * ONE_DAY_MS;
 
-	public final static com.vividsolutions.jts.geom.Coordinate cap_to_jts(com.google.publicalerts.cap.Point point) {
-		return new com.hazardalert.common.Point(point.getLatitude(), point.getLongitude()).toCoordinate();
-	}
-
-	public final static com.google.publicalerts.cap.Point jts_to_cap(com.vividsolutions.jts.geom.Coordinate coordinate) {
-		com.hazardalert.common.Point p = new com.hazardalert.common.Point(coordinate);
-		com.google.publicalerts.cap.Point.Builder point = com.google.publicalerts.cap.Point.newBuilder();
-		point.setLatitude(p.getLat());
-		point.setLongitude(p.getLng());
-		return point.build();
-	}
-
 	public final static com.google.publicalerts.cap.Polygon toPolygon(com.google.publicalerts.cap.Circle circle) {
-		Coordinate coordinates[] = new Coordinate[17];
-		for (int i = 0; i < coordinates.length - 1; i++) {
-			double bearing = Math.toRadians(i * 360.0 / (coordinates.length - 1));
-			coordinates[i] = travel(new Point(circle.getPoint()), bearing, circle.getRadius()).toCoordinate();
+		Point center = new Point(circle.getPoint());
+		Point perimeter[] = new Point[17];
+		for (int i = 0; i < perimeter.length - 1; i++) {
+			double bearing = Math.toRadians(i * 360.0 / (perimeter.length - 1));
+			perimeter[i] = center.travel(bearing, circle.getRadius());
 		}
-		coordinates[coordinates.length - 1] = coordinates[0];
+		perimeter[perimeter.length - 1] = perimeter[0];
 		GeometryFactory factory = new GeometryFactory();
-		LinearRing shell = factory.createLinearRing(coordinates);
+		LinearRing shell = factory.createLinearRing(perimeter);
 		return toPolygonCap(factory.createPolygon(shell));
 	}
 
@@ -57,7 +46,7 @@ public abstract class CommonUtil {
 		final List<com.google.publicalerts.cap.Point> points = capPolygon.getPointList();
 		Coordinate coordinates[] = new Coordinate[points.size()];
 		for (int i = 0; i < coordinates.length; i++) {
-			coordinates[i] = cap_to_jts(points.get(i));
+			coordinates[i] = new Point(points.get(i));
 		}
 		GeometryFactory factory = new GeometryFactory();
 		LinearRing shell = factory.createLinearRing(coordinates);
@@ -73,7 +62,7 @@ public abstract class CommonUtil {
 		com.google.publicalerts.cap.Polygon.Builder builder = com.google.publicalerts.cap.Polygon.newBuilder();
 		final Coordinate coordinates[] = lr.getCoordinates();
 		for (int i = 0; i < coordinates.length; i++) {
-			builder.addPoint(jts_to_cap(coordinates[i]));
+			builder.addPoint(new Point(coordinates[i]).toPointCAP());
 		}
 		return builder.build();
 	}
@@ -119,42 +108,11 @@ public abstract class CommonUtil {
 		return centroid;
 	}
 
-	// returns distance in km between two lat/lng pairs
-	//http://stackoverflow.com/questions/27928/how-do-i-calculate-distance-between-two-latitude-longitude-points
-	public final static double distanceBetween(com.vividsolutions.jts.geom.Coordinate a, com.vividsolutions.jts.geom.Coordinate b) {
-		final double R = 6371.0; // radius of earth in km
-		double dLat = Math.toRadians(a.x - b.x);
-		double dLng = Math.toRadians(a.y - b.y);
-		double d = Math.sin(dLat / 2) * Math.sin(dLat / 2) + //
-				Math.cos(Math.toRadians(b.x)) * Math.cos(Math.toRadians(a.x)) * //
-				Math.sin(dLng / 2) * Math.sin(dLng / 2);
-		double c = 2 * Math.atan2(Math.sqrt(d), Math.sqrt(1 - d));
-		return R * c;
-	}
-
-	//bearing (radians)
-	//distance (km)
-	//http://www.movable-type.co.uk/scripts/latlong.html
-	//TODO FIXME
-	public final static com.vividsolutions.jts.geom.Coordinate travel(Coordinate a, double bearing, double distance) {
-		final double R = 6371.0; // radius of earth in km
-		final double dOverR = distance / R;
-		final double lat1 = Math.toRadians(a.x);
-		final double lng1 = Math.toRadians(a.y);
-		final double lat2 = Math.asin(Math.sin(lat1) * Math.cos(dOverR) + Math.cos(lat1) * Math.sin(dOverR) * Math.cos(bearing));
-		final double lng2 = lng1
-				+ Math.atan2(Math.sin(bearing) * Math.sin(dOverR) * Math.cos(lat1), Math.cos(dOverR) - Math.sin(lat1) * Math.sin(lat2));
-		return new Coordinate(Math.toDegrees(lat2), Math.toDegrees(lng2));
-	}
-
-	public final static Point travel(Point p, double bearing, double distance) {
-		return new Point(travel(p.toCoordinate(), bearing, distance));
-	}
-
 	// distance (km)
 	public final static Envelope getBoundingBox(Coordinate center, double distance) {
-		Coordinate ne = travel(center, Math.toRadians(45.0), distance);
-		Coordinate sw = travel(center, Math.toRadians(225.0), distance);
+		Point start = new Point(center);
+		Coordinate ne = start.travel(Math.toRadians(45.0), distance);
+		Coordinate sw = start.travel(Math.toRadians(225.0), distance);
 		return new Envelope(ne, sw);
 	}
 
