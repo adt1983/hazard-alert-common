@@ -24,4 +24,16 @@ public class CircleToPolygon {
 		assertTrue(jts.isSimple());
 		assertEquals(0, CommonUtil.toPolygonJts(p).getNumInteriorRing());
 	}
+
+	@Test
+	@SuppressWarnings("unused")
+	public void testTaiwan() {
+		com.google.publicalerts.cap.Circle c = Circle.newBuilder()
+														.setPoint(Point.newBuilder().setLatitude(24.49971).setLongitude(121.8358).build())
+														.setRadius(10.0)
+														.build();
+		com.google.publicalerts.cap.Polygon p = CommonUtil.toPolygon(c);
+		Polygon jts = CommonUtil.toPolygonJts(p);
+		String s = jts.toText();
+	}
 }
