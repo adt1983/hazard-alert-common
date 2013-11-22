@@ -40,10 +40,12 @@ public class AlertFilter implements Serializable {
 
 	public static AlertFilter defaultClientFilter() {
 		AlertFilter af = new AlertFilter();
+		af.addUrgency(Urgency.PAST);
 		af.addUrgency(Urgency.FUTURE);
 		af.addUrgency(Urgency.EXPECTED);
 		af.addUrgency(Urgency.IMMEDIATE);
 		//
+		af.addSeverity(Severity.UNKNOWN_SEVERITY);
 		af.addSeverity(Severity.MINOR);
 		af.addSeverity(Severity.MODERATE);
 		af.addSeverity(Severity.SEVERE);
