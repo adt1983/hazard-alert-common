@@ -5,6 +5,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 import com.hazardalert.common.Bounds;
+import com.hazardalert.common.Point;
 
 public class BoundsTest {
 	@Test
@@ -19,5 +20,10 @@ public class BoundsTest {
 				fail();
 			}
 		}
+	}
+
+	@Test
+	public void testAustin() {
+		Bounds b = new Bounds(new Point(30.340778, -97.691460), 0.25);
 	}
 }
