@@ -71,6 +71,29 @@ public class Bounds implements Serializable {
 		this(env.getMaxY(), env.getMaxX(), env.getMinY(), env.getMinX());
 	}
 
+	public Bounds(Point center, double distanceKM) {
+		Point ne = center.travel(Math.toRadians(45.0), distanceKM);
+		Point sw = center.travel(Math.toRadians(225.0), distanceKM);
+		init(ne, sw);
+		new Assert(contains(center));
+	}
+
+	public Bounds(Coordinate northeast, Coordinate southwest) {
+		init(new Point(northeast), new Point(southwest));
+	}
+
+	public Bounds(Point northeast, Point southwest) {
+		init(northeast, southwest);
+	}
+
+	private void init(Point ne, Point sw) {
+		this.setNe_lng(ne.getLng());
+		this.setNe_lat(ne.getLat());
+		this.setSw_lng(sw.getLng());
+		this.setSw_lat(sw.getLat());
+		new Assert(ne.getLat() > sw.getLat());
+	}
+
 	public com.vividsolutions.jts.geom.Envelope toEnvelope() {
 		Envelope env = new Envelope();
 		env.expandToInclude(getNe_lng(), getNe_lat());
@@ -141,6 +164,16 @@ public class Bounds implements Serializable {
 		Bounds split[] = new Bounds[2];
 		split[0] = new Bounds(ne_lat, ne_lng, sw_lat, -180.0); // East of 180 Meridian
 		split[1] = new Bounds(ne_lat, 180.0, sw_lat, sw_lng); // West of 180 Meridian
+		new Assert(!split[0].spansAntiMeridian());
+		new Assert(!split[1].spansAntiMeridian());
 		return split;
+	}
+
+	public boolean contains(Point p) {
+		if (spansAntiMeridian()) {
+			Bounds[] split = splitOnAntiMeridian();
+			return split[0].contains(p) || split[1].contains(p);
+		}
+		return (sw_lat < p.getLat() && p.getLat() < ne_lat) && (sw_lng < p.getLng() && p.getLng() < ne_lng);
 	}
 }

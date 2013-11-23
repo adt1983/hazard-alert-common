@@ -5,8 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
@@ -106,26 +104,6 @@ public abstract class CommonUtil {
 		GeometryCollection gc = cap_to_jts(cap);
 		com.vividsolutions.jts.geom.Point centroid = gc.getCentroid();
 		return centroid;
-	}
-
-	// distance (km)
-	public final static Envelope getBoundingBox(Coordinate center, double distance) {
-		Point start = new Point(center);
-		Coordinate ne = start.travel(Math.toRadians(45.0), distance);
-		Coordinate sw = start.travel(Math.toRadians(225.0), distance);
-		return new Envelope(ne, sw);
-	}
-
-	public final static Geometry createBoundingBox(Coordinate northeast, Coordinate southwest) {
-		Coordinate mbr[] = new Coordinate[5];
-		mbr[0] = new Coordinate(northeast.x, northeast.y);
-		mbr[1] = new Coordinate(northeast.x, southwest.y);
-		mbr[2] = new Coordinate(southwest.x, southwest.y);
-		mbr[3] = new Coordinate(southwest.x, northeast.y);
-		mbr[4] = new Coordinate(northeast.x, northeast.y);
-		GeometryFactory factory = new GeometryFactory();
-		LinearRing shell = factory.createLinearRing(mbr);
-		return new Polygon(shell, null, factory);
 	}
 
 	public static List<String> toString(List<Long> longs) {
