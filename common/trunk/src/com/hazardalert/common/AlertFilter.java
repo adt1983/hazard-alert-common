@@ -31,6 +31,8 @@ public class AlertFilter implements Serializable {
 
 	private List<Long> senders;
 
+	private List<String> languages;
+
 	private Long limit;
 
 	public AlertFilter() {
@@ -92,6 +94,13 @@ public class AlertFilter implements Serializable {
 		}
 	}
 
+	//TODO: use GUAVA?
+	private void addTo(List<String> list, String value) {
+		if (!list.contains(value)) {
+			list.add(value);
+		}
+	}
+
 	/*
 	 * public boolean contains(Long a) {
 		for (Long b : this) {
@@ -117,6 +126,30 @@ public class AlertFilter implements Serializable {
 		}
 		addTo(senders, sender);
 		return this;
+	}
+
+	public List<String> getLanguages() {
+		return languages;
+	}
+
+	public AlertFilter setLanguages(List<String> languages) {
+		this.languages = languages;
+		return this;
+	}
+
+	public AlertFilter addLanguage(String language) {
+		if (null == languages) {
+			languages = new ArrayList<String>();
+		}
+		addTo(languages, language);
+		return this;
+	}
+
+	public boolean hasLanguage(String l) {
+		if (null == this.languages) {
+			return false;
+		}
+		return this.languages.contains(l);
 	}
 
 	public List<Long> getUrgency() {
@@ -265,6 +298,7 @@ public class AlertFilter implements Serializable {
 		equals = fieldEquals(certainty, rhs.certainty) ? equals : false;
 		equals = fieldEquals(exclude, rhs.exclude) ? equals : false;
 		equals = fieldEquals(include, rhs.include) ? equals : false;
+		equals = fieldEquals(languages, rhs.languages) ? equals : false;
 		equals = fieldEquals(limit, rhs.limit) ? equals : false;
 		equals = fieldEquals(minEffective, rhs.minEffective) ? equals : false;
 		equals = fieldEquals(minExpires, rhs.minExpires) ? equals : false;
@@ -286,6 +320,7 @@ public class AlertFilter implements Serializable {
 		out.writeObject(certainty);
 		out.writeObject(exclude);
 		out.writeObject(include);
+		out.writeObject(languages);
 		out.writeObject(limit);
 		out.writeObject(minEffective);
 		out.writeObject(minExpires);
@@ -300,6 +335,7 @@ public class AlertFilter implements Serializable {
 		certainty = (List<Long>) in.readObject();
 		exclude = (Bounds) in.readObject();
 		include = (Bounds) in.readObject();
+		languages = (List<String>) in.readObject();
 		limit = (Long) in.readObject();
 		minEffective = (Long) in.readObject();
 		minExpires = (Long) in.readObject();
