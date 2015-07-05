@@ -17,6 +17,8 @@ public class AlertFilter implements Serializable {
 
 	private Bounds exclude;
 
+	private Point location; // Alert contains 'location'. Overrides include/exclude.
+
 	private Long minExpires;
 
 	private Long minEffective;
@@ -270,6 +272,15 @@ public class AlertFilter implements Serializable {
 		return this;
 	}
 
+	public Point getLocation() {
+		return location;
+	}
+
+	public AlertFilter setLocation(Point location) {
+		this.location = location;
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
@@ -298,6 +309,7 @@ public class AlertFilter implements Serializable {
 		equals = fieldEquals(certainty, rhs.certainty) ? equals : false;
 		equals = fieldEquals(exclude, rhs.exclude) ? equals : false;
 		equals = fieldEquals(include, rhs.include) ? equals : false;
+		equals = fieldEquals(location, rhs.location) ? equals : false;
 		equals = fieldEquals(languages, rhs.languages) ? equals : false;
 		equals = fieldEquals(limit, rhs.limit) ? equals : false;
 		equals = fieldEquals(minEffective, rhs.minEffective) ? equals : false;
@@ -320,6 +332,7 @@ public class AlertFilter implements Serializable {
 		out.writeObject(certainty);
 		out.writeObject(exclude);
 		out.writeObject(include);
+		out.writeObject(location);
 		out.writeObject(languages);
 		out.writeObject(limit);
 		out.writeObject(minEffective);
@@ -335,6 +348,7 @@ public class AlertFilter implements Serializable {
 		certainty = (List<Long>) in.readObject();
 		exclude = (Bounds) in.readObject();
 		include = (Bounds) in.readObject();
+		location = (Point) in.readObject();
 		languages = (List<String>) in.readObject();
 		limit = (Long) in.readObject();
 		minEffective = (Long) in.readObject();
